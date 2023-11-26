@@ -7,4 +7,10 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="lakers">#7143C0</color>
+    <color name="celtics">#F44336</color>
+    <color name="warriors">#0D32E6</color>
+    <color name="heat">#E06B26</color>
+    <color name="bucks">#11E442</color>
+    <color name="nets">#FFE600</color>
 </resources>
