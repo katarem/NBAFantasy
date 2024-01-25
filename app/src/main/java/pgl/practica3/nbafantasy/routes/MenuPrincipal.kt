@@ -1,8 +1,10 @@
 package pgl.practica3.nbafantasy.routes
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -68,7 +70,7 @@ fun MenuPrincipal(navController: NavController?, listaImportada: ArrayList<Jugad
                     query.value = it
                     if (query.value.isEmpty()) listaJugadores.value = listaImportada
                     else listaJugadores.value = listaImportada.filter { jugador -> jugador.equipo.startsWith(query.value,true) } as ArrayList<Jugador>
-                }, onSearch = {}, active = searchActive.value, onActiveChange = {searchActive.value = !searchActive.value},
+                }, onSearch = { searchActive.value = false }, active = searchActive.value, onActiveChange = {searchActive.value = !searchActive.value},
                 shape = RectangleShape,
                 placeholder = { Text(text = "Busca a jugadores por equipo") },
                 colors = SearchBarDefaults.colors(containerColor = Color(R.color.white)),
@@ -100,10 +102,10 @@ fun MenuPrincipal(navController: NavController?, listaImportada: ArrayList<Jugad
             ){
                 listaJugadores.value.forEachIndexed{ _, jugador ->
                     item{
-                        JugadorComponent(jugador = jugador, editMode.value){
+                        JugadorComponent(jugador = jugador,editMode.value ,onChecked = {
                             listaImportada.remove(jugador)
                             listaJugadores.value = listaImportada
-                        }
+                        }, onLongPressed = { navController?.navigate(Rutas.DetallesJugador.ruta + "/${jugador.nombre}") })
                     }
                 }
             }
@@ -146,58 +148,57 @@ fun EquipoComponent(equipo: String, onClick : () -> Unit){
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun JugadorComponent(jugador: Jugador, editMode: Boolean, onChecked: () -> Unit){
+fun JugadorComponent(jugador: Jugador, editMode: Boolean, onChecked: () -> Unit, onLongPressed: () -> Unit){
     val checked = remember { mutableStateOf(false) }
     val teamColor = setColorEquipo(jugador.equipo)
     val playerIcon = setImagenJugador(jugador.nombre)
 
-        if(checked.value && !editMode) onChecked()
-        ElevatedCard(
-            elevation = CardDefaults.cardElevation(
-                defaultElevation = 6.dp
-            ),
-            modifier = Modifier
+    if(checked.value && !editMode) onChecked()
+    ElevatedCard(
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 6.dp
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp)
+            .padding(5.dp)
+    ) {
+        Row(
+            Modifier
                 .fillMaxWidth()
-                .height(100.dp)
-                .padding(5.dp)
+                .background(teamColor),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .background(teamColor),
-                verticalAlignment = Alignment.CenterVertically
+            Image(
+                painter = painterResource(id = playerIcon), contentDescription = "",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+                    .combinedClickable(onLongClick = { onLongPressed() },onClick = {}),
+            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier.weight(2f)
             ) {
-                Image(
-                    painter = painterResource(id = playerIcon), contentDescription = "",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape),
-                )
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.SpaceEvenly,
-                    modifier = Modifier.weight(2f)
-                ) {
-                    Text(text = jugador.nombre)
-                    Text(text = "VS ${jugador.equipoRival}, ${jugador.fechaPartido}")
-                    Text(text = "" + jugador.puntos + "PP")
-                }
-                if (editMode) {
-                    Checkbox(checked = checked.value, onCheckedChange = {
-                        checked.value = !checked.value
-
-                    }, enabled = true, modifier = Modifier.weight(1f))
-                }
+                Text(text = jugador.nombre)
+                Text(text = "VS ${jugador.equipoRival}, ${jugador.fechaPartido}")
+                Text(text = "" + jugador.puntos + "PP")
             }
+            if (editMode) {
+                    Checkbox(checked = checked.value, onCheckedChange = { checked.value = !checked.value }, enabled = true, modifier = Modifier.weight(1f))
+            }
+        }
     }
 }
 
 fun setColorEquipo(equipo: String): Color{
     return when(equipo) {
         "Los Angeles Lakers" -> Color(200,200,60)
-        "Philadelphia" -> Color(40,200,60)
+        "Philadelphia 76ers" -> Color(40,200,60)
         "Golden State Warriors" -> Color(255,0,0)
         "Miami Heat" -> Color(0,0,255)
         "Milwaukee Bucks" -> Color(50,100,50)

@@ -23,8 +23,10 @@ fun Navigator(){
             CrearJugadores(navController = navController, jugadores = listaJugadores)
 
         }
-        composable(Rutas.DetallesJugador.ruta){
-            DetallesJugador(navController = navController, jugador = listaJugadores[0])
+        composable(Rutas.DetallesJugador.ruta + "/{jugador}"){
+            val jugadorName = it.arguments?.getString("jugador")
+            val jugador = listaJugadores.filter { player -> player.nombre == jugadorName }.first()
+            DetallesJugador(navController = navController, jugador = jugador)
         }
     }
 
