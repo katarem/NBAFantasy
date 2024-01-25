@@ -1,20 +1,13 @@
 package pgl.practica3.nbafantasy.routes
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.rememberScrollableState
-import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -29,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,7 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import pgl.practica3.nbafantasy.model.BaseDeDatos
 import pgl.practica3.nbafantasy.model.Jugador
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,8 +47,9 @@ fun CrearJugadores(navController: NavController?, jugadores: ArrayList<Jugador>)
     var expandedNames by remember { mutableStateOf(false) }
     var puntosObtenidos by remember { mutableStateOf(0f) }
     var fechaPartido by remember { mutableStateOf(Calendar.getInstance()) }
-    var equipos: Set<String> = jugadores.map { it.equipo }.toSet()
-    var jugadoresNombres: Set<String> = jugadores.map { it.nombre }.toSet()
+    val posicionesJugadas = remember{ mutableStateOf(arrayListOf<String>()) }
+    val equipos: Set<String> = jugadores.map { it.equipo }.toSet()
+    val jugadoresNombres: Set<String> = jugadores.map { it.nombre }.toSet()
     Column(
         Modifier
             .padding(10.dp)
@@ -107,11 +102,11 @@ fun CrearJugadores(navController: NavController?, jugadores: ArrayList<Jugador>)
         Text(text = "Selecciona una o más posiciones:")
         Column(
         ) {
-            PosicionComponent(posicion = "PF")
-            PosicionComponent(posicion = "C")
-            PosicionComponent(posicion = "PG")
-            PosicionComponent(posicion = "SG")
-            PosicionComponent(posicion = "SF")
+            PosicionComponent(posicion = "PF",posicionesJugadas.value)
+            PosicionComponent(posicion = "C",posicionesJugadas.value)
+            PosicionComponent(posicion = "PG",posicionesJugadas.value)
+            PosicionComponent(posicion = "SG",posicionesJugadas.value)
+            PosicionComponent(posicion = "SF", posicionesJugadas.value)
         }
         Text(text = "El número de puntos que metió en el partido:")
         Slider(value = puntosObtenidos, onValueChange = { it -> puntosObtenidos=it}, valueRange = 0f..100f, steps = 100)
@@ -142,9 +137,9 @@ fun CrearJugadores(navController: NavController?, jugadores: ArrayList<Jugador>)
 
         BackHandler {
             val jugador = Jugador(nombreJugador,nombreEquipo,
-                arrayOf("").toList(),puntosObtenidos.toInt(),nombreEquipoRival, "1/11/2000")
+                posicionesJugadas.value,puntosObtenidos.toInt(),nombreEquipoRival, fechaPartido.toString())
             jugadores.add(jugador)
-            BaseDeDatos.writeData(jugadores)
+            BaseDeDatos.jugadores.add(jugador)
             navController?.popBackStack()
         }
 
@@ -152,12 +147,15 @@ fun CrearJugadores(navController: NavController?, jugadores: ArrayList<Jugador>)
 
 
 @Composable
-fun PosicionComponent(posicion: String){
+fun PosicionComponent(posicion: String, posicionesElegidas: ArrayList<String>){
     var selected by remember { mutableStateOf(false) }
+    if(selected && !posicionesElegidas.contains(posicion)) posicionesElegidas.add(posicion)
     Row(
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        RadioButton(selected = selected, onClick = { selected = !selected})
+        RadioButton(selected = selected, onClick = {
+            selected = !selected
+        })
         Text(text = posicion)
     }
 }
@@ -165,32 +163,6 @@ fun PosicionComponent(posicion: String){
 @Preview(showBackground = true)
 @Composable
 fun CrearPreview(){
-    CrearJugadores(navController = null, arrayListOf(
-        Jugador("Lebron James", "Los Angeles Lakers", arrayOf("a","b","c").toList(),29,"rival",
-            "9/11/2001"
-        ),
-        Jugador("Donovan Mitchell", "Boston Celtics", arrayOf("a","b","c").toList(),12,"rival",
-            "9/11/2001"
-        ),
-        Jugador("Aperen Sengun", "Golden State Warriors", arrayOf("a","b","c").toList(),10,"rival",
-            "9/11/2001"
-        ),
-
-        Jugador("Naz Reid", "bulls", arrayOf("a","b","c").toList(),10,"rival",
-            "10/10/2002"
-        ),
-        Jugador("Lebron James", "bulls", arrayOf("a","b","c").toList(),10,"rival",
-            "20/02/2003"
-        ),
-        Jugador("Lebron James", "bulls", arrayOf("a","b","c").toList(),10,"rival",
-            "30/10/2004"
-        ),
-        Jugador("Lebron James", "bulls", arrayOf("a","b","c").toList(),10,"rival",
-            "31/12/2004"
-        ),
-        Jugador("Lebron James", "bulls", arrayOf("a","b","c").toList(),10,"rival",
-            "03/04/2005"
-        )
-    )
-    )
+    CrearJugadores(
+        navController = null, BaseDeDatos.jugadores)
 }

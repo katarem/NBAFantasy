@@ -5,8 +5,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import pgl.practica3.nbafantasy.model.BaseDeDatos
-import pgl.practica3.nbafantasy.model.Jugador
-import java.util.Date
 
 @Composable
 fun Navigator(){
@@ -14,11 +12,7 @@ fun Navigator(){
 
     NavHost(navController = navController, startDestination = Rutas.MenuPrincipal.ruta){
 
-        var listaJugadores: ArrayList<Jugador> = BaseDeDatos.readData()
-
-        composable(Rutas.)
-
-
+        val listaJugadores = BaseDeDatos.jugadores
 
         composable(Rutas.MenuPrincipal.ruta){
 
@@ -29,8 +23,8 @@ fun Navigator(){
             CrearJugadores(navController = navController, jugadores = listaJugadores)
 
         }
-        composable(Rutas.Detalles.ruta){
-
+        composable(Rutas.DetallesJugador.ruta){
+            DetallesJugador(navController = navController, jugador = listaJugadores[0])
         }
     }
 
